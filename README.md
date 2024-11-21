@@ -8,8 +8,13 @@ To restore the image UW<br>
 4.构建复杂环境下的模型<br>
 5.比较单一与其他模型给建议<br>
 代码结构  
+Q1:  
 showraw.py用于统计展示源图的各项基本信息<br>
 sort.py用于分类图片，并输出至result.csv<br>
 judge.py负责几种异常情况判断<br>
+Q2:  
+Q2_foggy文件用于调用foggy文件在图像上产生模糊并储存，本代码使用cv2中的高斯模糊代码，可设置卷积核大小<br>
+Q2_colorshift文件用于调用colorshift文件在图像上产生色偏，调用实际物理模型，分通道进行。<br>
+Q2_lowlight文件用于调用lowlight文件使图像产生低光异常。<br>
 push和clone用于克隆和推送至github
 
