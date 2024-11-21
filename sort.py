@@ -1,7 +1,7 @@
 import os
 import csv
 from showraw import show_histogram_and_calculate_brightness
-from showrawifgray import show_histogram_and_calculate_darkness_probability
+import judge
 
 
 
@@ -16,7 +16,8 @@ def count_files_in_attachment():
         # 打开 CSV 文件以写入结果
         with open('result.csv', mode='w', newline='') as file:
             writer = csv.writer(file)
-            writer.writerow(["Filename", "Average Brightness"])
+            # 写入 CSV 文件的标题行
+            writer.writerow(["Filename", "Average Brightness","darkness_probability","furryposibility","colorpref","colorprefnum"])
             
             # 遍历文件并处理图像
             for i, filename in enumerate(files):
@@ -28,10 +29,15 @@ def count_files_in_attachment():
                     #调用show_histogram_and_calculate_brightness函数，计算图像的平均亮度
 
                     #调用show_histogram_and_calculate_darkness_probability函数，计算图像为暗的概率
-                    darkness_probability = show_histogram_and_calculate_darkness_probability(file_path)
+                    darkness_probability = judge.calculate_darkness_probability(file_path)
+
+                    furryposibility = judge.is_image_blurry(file_path)
+
+                    # colorpref = judge.calculate_hsv_features(file_path)
+                    colorpref, colorprefnum = judge.calculate_color_bias(file_path)
 
                     #将brightness和darkness_probability写入CSV文件
-                    writer.writerow([filename, brightness, darkness_probability])
+                    writer.writerow([filename, brightness, darkness_probability,furryposibility,colorpref,colorprefnum])
                 except ValueError as e:
                     print(f"Error processing {filename}: {e}")
     
