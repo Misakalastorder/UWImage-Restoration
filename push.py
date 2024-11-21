@@ -20,3 +20,5 @@ os.system("git pull origin master --rebase")
 
 # Push the changes to the remote repository
 os.system("git push -u origin master")
+# # Push the changes to the remote repository on the 'second' branch
+# os.system("git push -u origin second")
