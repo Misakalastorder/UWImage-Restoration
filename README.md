@@ -8,3 +8,7 @@ To restore the image UW
 4.构建复杂环境下的模型
 5.比较单一与其他模型给建议
 代码结构
+showraw.py用于统计展示源图的各项基本信息
+sort.py用于分类图片，并输出至result.csv
+judge.py负责几种异常情况判断
+push和clone用于克隆和推送至github
