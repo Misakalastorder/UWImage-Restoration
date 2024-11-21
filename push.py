@@ -15,5 +15,8 @@ os.system('git commit -m "Initial commit"')
 # Add the remote repository URL
 os.system(f"git remote add origin {repo_url}")
 
+# Pull the changes from the remote repository
+os.system("git pull origin master --rebase")
+
 # Push the changes to the remote repository
 os.system("git push -u origin master")
