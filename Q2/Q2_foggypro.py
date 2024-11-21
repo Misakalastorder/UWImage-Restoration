@@ -1,3 +1,4 @@
+#通过调用foggy.py中的函数apply_fog_effect，对指定文件夹中的图片进行雾化处理，并将处理后的图片保存到指定文件夹中。
 import os
 from foggy import apply_fog_effect
 from PIL import Image
