@@ -1,4 +1,5 @@
 # Function: 展示图片三通道直方图，并计算图片的平均亮度和判断为暗图的概率
+#另外，我们
 import os
 import cv2
 import numpy as np
