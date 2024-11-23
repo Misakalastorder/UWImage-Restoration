@@ -6,8 +6,14 @@ import matplotlib.pyplot as plt
 import os
 import csv
 
-def estimate_background_light_local(img, size=[90, 90]):
-    gray_img = rgb2gray(img)
+def estimate_background_light_local(image,depthimg, size=[90, 90]):
+    
+
+    
+    img = image
+    # img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    # gray_img = rgb2gray(img)
+    gray_img = depthimg
     flat_gray = gray_img.flatten()
     
     # 去除亮度大小处于较大的前0.01%的点
@@ -18,16 +24,29 @@ def estimate_background_light_local(img, size=[90, 90]):
     threshold_01 = np.percentile(flat_gray, 99.9)
     mask_01 = (gray_img >= threshold_01) & mask_001
     
+
+
     # 超像素分割
     segments = slic(img, n_segments=(img.shape[0] // size[0]) * (img.shape[1] // size[1]), compactness=10)
+    #展示image测试
     
+    outputimage_mark = image.copy()
+    #将mask01标记的点标红
+    outputimage_mark[mask_01] = [0, 0, 255]
+    #将超像素块的轮廓标绿
+    outputimage_mark = mark_boundaries(outputimage_mark, segments, color=(0, 1, 0))
+    #将outuimage_mark转换为0-255的图像
+    outputimage_mark = outputimage_mark*255
+    outputimage_mark = outputimage_mark.astype(np.uint8)
+
+
     min_gradient = float('inf')
     reference_pixels = []
     marked_segment = None
 
     for segment_val in np.unique(segments):
         mask = segments == segment_val
-        segment_pixels = gray_img[mask]
+        segment_pixels = img[mask]
         gradient = np.mean(np.gradient(segment_pixels))
         
         if gradient < min_gradient and np.any(mask_01[mask]):
@@ -62,14 +81,20 @@ def estimate_background_light_local(img, size=[90, 90]):
         color_background_light = np.mean(img, axis=(0, 1))
 
     # 标记点标红
-    marked_img = img.copy()
-    marked_img[mask_01] = [255, 0, 0]
+    selected_img = img.copy()
+    selected_img[mask_01] = [0, 0, 255]
     
     # 标出结果超像素块的轮廓
-    # if marked_segment is not None:
-    #     marked_img = mark_boundaries(marked_img, segments == marked_segment, color=(0, 1, 0))
+    if marked_segment is not None:
+        selected_img = mark_boundaries(selected_img, segments == marked_segment, color=(0, 1, 0))
+    
+    selected_img=selected_img*255
+    selected_img = selected_img.astype(np.uint8)
+
+    # cv2.imshow('selected_img',selected_img)
+    # cv2.waitKey(0)
     # 标出所有超像素块的轮廓
-    marked_img = mark_boundaries(marked_img ,segments, color=(0, 1, 0))
+    # marked_img = mark_boundaries(marked_img ,segments, color=(0, 1, 0))
     
     # plt.imshow(marked_img)
     # plt.title('Superpixel Segmentation with Marked Points')
@@ -79,7 +104,9 @@ def estimate_background_light_local(img, size=[90, 90]):
     # print(color_background_light)
     #计算结果超像素块所有的标记点三通道的均值
 
-    return background_light, marked_img,color_background_light
+    return background_light, selected_img, color_background_light,outputimage_mark
+
+
 
 # def process_images_and_save_results(folder_path):
     
