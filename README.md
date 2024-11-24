@@ -39,4 +39,8 @@ Q2_lowlight文件用于调用lowlight文件使图像产生低光异常。<br>
 Richard W. Gould, Robert A. Arnone, and Paul M. Martinolich, "Spectral dependence of the scattering coefficient in case 1 and case 2 waters," Appl. Opt. 38, 2377-2383 (1999)<br>
 
 # Q4
-
+基础上使用GAN即生成对抗网络。由一个生成网络与一个判别网络组成。<br>
+生成网络从潜在空间（latent space）中随机取样作为输入，其输出结果需要尽量模仿训练集中的真实样本。<br>
+判别网络的输入则为真实样本或生成网络的输出，其目的是将生成网络的输出从真实样本中尽可能分辨出来。<br>
+而生成网络则要尽可能地欺骗判别网络。两个网络相互对抗、不断调整参数。<br>
+最终目的是使判别网络无法判断生成网络的输出结果是否真实。
