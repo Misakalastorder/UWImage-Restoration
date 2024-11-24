@@ -18,6 +18,9 @@ os.system(f"git remote add origin {repo_url}")
 # Pull the changes from the remote repository
 os.system("git pull origin master --rebase")
 
+#添加提交代码的说明
+commit_message = input("Enter the commit message: ")
+os.system(f'git commit -m "{commit_message}"')
 # Push the changes to the remote repository
 os.system("git push -u origin master")
 # # Push the changes to the remote repository on the 'second' branch
