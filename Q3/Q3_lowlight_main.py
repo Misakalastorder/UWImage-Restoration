@@ -93,5 +93,5 @@ def dehaze_V2(originPath, savePath):
     # cv2.waitKey(0)
 
 if __name__ == '__main__':
-    dehaze_V2(r'./Attachment1', './output/lowlight')
+    dehaze_V2(r'./Attachment2', './forty/lowlight')
 

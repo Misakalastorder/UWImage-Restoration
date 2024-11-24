@@ -20,7 +20,7 @@ def process_images_and_save_results(folder_path, output_folder=None):
         files = os.listdir(folder_path)
         for i, file in enumerate(files):
             # 执行多次后停止
-            if i >= 30:
+            if i >= 404:
                 break
             file_path = os.path.join(folder_path, file)
             if file_path.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.tiff')):
@@ -100,8 +100,8 @@ def process_images_and_save_results(folder_path, output_folder=None):
 
 
 if __name__ == "__main__":
-    folder_path = os.path.join(os.path.dirname(__file__), 'Attachment1')
-    output_folder = os.path.join(os.path.dirname(__file__), 'output')
+    folder_path = os.path.join(os.path.dirname(__file__), 'Attachment2')
+    output_folder = os.path.join(os.path.dirname(__file__), 'forty')
     process_images_and_save_results(folder_path,output_folder)
 
 

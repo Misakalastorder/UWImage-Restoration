@@ -1,97 +1,121 @@
 import cv2
 import numpy as np
 import os
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 
-#计算雾化图像的暗通道
-def dark_channel(img, size = 15):
-    r, g, b = cv2.split(img)
-    min_img = cv2.min(r, cv2.min(g, b))#取最暗通道
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (size, size))
-    dc_img = cv2.erode(min_img,kernel)
-    return dc_img
+def enhance(img):
+    # 估计高斯模糊参数
+    kernel_size, sigma = estimate_gaussian_blur_params(img)
+    
+    # 去模糊处理
+    en_img = deblur_image(img, kernel_size, sigma)
+    
+    return en_img
 
-#估计全局大气光值
-def get_atmo(img, percent = 0.001):
-    mean_perpix = np.mean(img, axis = 2).reshape(-1)
-    mean_topper = mean_perpix[:int(img.shape[0] * img.shape[1] * percent)]
-    return np.mean(mean_topper)
+def estimate_gaussian_blur_params(image):
+    # 估计高斯模糊的卷积核大小和标准差
+    # 这里使用一个简单的估计方法，你可以根据需要调整
+    
+    kernel_size = estimate_kernel_size(image)
+    # kernel = cv2.getGaussianKernel(kernel_size, 0)
+    # sigma=np.sqrt(np.sum(kernel**2))
+    #根据kernel_size计算sigma
+    sigma = 0.3 * ((kernel_size - 1) * 0.5 - 1) + 0.8
+    
+    return kernel_size, sigma
 
-#估算透射率图
-def get_trans(img, atom, w = 0.95):
-    x = img / atom
-    t = 1 - w * dark_channel(x, 15)
-    return t
+def deblur_image(image, kernel_size, sigma):
+    # 创建高斯模糊核
+    
+    # 调用 OpenCV 的 getGaussianKernel 函数生成一个一维的高斯核。
+    # kernel_size 是核的大小，sigma 是高斯分布的标准差。这个函数返回一个列向量。
+    # np.outer(kernel, kernel)：使用 NumPy 的 outer 函数计算两个向量的外积。
+    # 这里将一维的高斯核与自身进行外积运算，生成一个二维的高斯核矩阵
+    kernel = cv2.getGaussianKernel(kernel_size, sigma)
+    kernel = np.outer(kernel, kernel)
+    
+    # 进行逆滤波
+    # 这是 OpenCV 提供的一个函数，用于对图像进行二维卷积操作。
+    # image：这是输入图像，类型为 cv2.typing.MatLike，即 OpenCV 的图像矩阵。
+    # -1：这是 ddepth 参数，表示输出图像的深度。-1 表示输出图像的深度与输入图像相同。
+    # kernel：这是卷积核，类型为 cv2.typing.MatLike，用于定义卷积操作的权重。
+    # 这行代码的作用是对输入图像 image 应用卷积核 kernel，并将结果存储在 
+    # deblurred 变量中。卷积操作通常用于图像处理中的滤波、边缘检测、去噪等任务。
+    deblurred = cv2.filter2D(image, -1, kernel)
+    return deblurred
 
-#引导滤波
-def guided_filter(p, i, r, e):
-    """
-    :param p: input image
-    :param i: guidance image
-    :param r: radius
-    :param e: regularization
-    :return: filtering output q
-    """
-    #1
-    mean_I = cv2.boxFilter(i, cv2.CV_64F, (r, r))
-    mean_p = cv2.boxFilter(p, cv2.CV_64F, (r, r))
-    corr_I = cv2.boxFilter(i * i, cv2.CV_64F, (r, r))
-    corr_Ip = cv2.boxFilter(i * p, cv2.CV_64F, (r, r))
-    #2
-    var_I = corr_I - mean_I * mean_I
-    cov_Ip = corr_Ip - mean_I * mean_p
-    #3
-    a = cov_Ip / (var_I + e)
-    b = mean_p - a * mean_I
-    #4
-    mean_a = cv2.boxFilter(a, cv2.CV_64F, (r, r))
-    mean_b = cv2.boxFilter(b, cv2.CV_64F, (r, r))
-    #5
-    q = mean_a * i + mean_b
-    return q
+def estimate_kernel_size(image):
+    # 将图像转换为灰度图像
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    
+    # 计算图像的傅里叶变换
+    f = np.fft.fft2(gray)
+    fshift = np.fft.fftshift(f)
+    
+    
+    # 计算幅度谱
+    magnitude_spectrum = 20 * np.log(np.abs(fshift))
+    
+    rows, cols = gray.shape
+    x = np.linspace(0, cols, cols)
+    y = np.linspace(0, rows, rows)
+    x, y = np.meshgrid(x, y)
+
+    #用三维空间绘出矩阵magnitude_spectrum
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.plot_surface(x, y, magnitude_spectrum, cmap='rainbow')
+    plt.show()
 
 
 
+    # 计算幅度谱的中心区域的平均值
+    rows, cols = gray.shape
+    crow, ccol = rows // 2 , cols // 2
+    center_region = magnitude_spectrum[crow-30:crow+30, ccol-30:ccol+30]
+    mean_val = np.mean(center_region)
+    
+    # 根据平均值估计卷积核大小
+    if mean_val < 10:
+        kernel_size = 3
+    elif mean_val < 20:
+        kernel_size = 5
+    elif mean_val < 30:
+        kernel_size = 7
+    else:
+        kernel_size = 9
+    
+    return kernel_size
 
-# def dehaze(im):
-
-#     img = im.astype('float64') / 255
-#     img_gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY).astype('float64') / 255
-#     atom = get_atmo(img)
-#     trans = get_trans(img, atom)
-#     trans_guided = guided_filter(trans, img_gray, 20, 0.0001)
-#     trans_guided = cv2.max(trans_guided, 0.25)
-#     result = np.empty_like(img)
-#     for i in range(3):
-#         result[:, :, i] = (img[:, :, i] - atom) / trans_guided + atom
-#     return result*255
-
-def dehaze_V2(originPath,savePath):
+def dehaze(originPath,savePath):
     '''originaPath:文件夹的路径，图片上一级
        savePath：同理'''
     for image_name in os.listdir(originPath):
         image_path = os.path.join(originPath,image_name)
         print(image_path)
-        im = cv2.imread(image_path)
-        img = im.astype('float64') / 255
-        img_gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY).astype('float64') / 255
-        atom = get_atmo(img)
-        trans = get_trans(img, atom)
-        trans_guided = guided_filter(trans, img_gray, 20, 0.0001)
-        trans_guided = cv2.max(trans_guided, 0.25)
-        result = np.empty_like(img)
-        for i in range(3):
-            result[:, :, i] = (img[:, :, i] - atom) / trans_guided + atom
-        oneSave = os.path.join(savePath,image_name)
-        cv2.imwrite(oneSave, result*255)
+        img = cv2.imread(image_path)
+         
+        deblurred_image = enhance(img)
+      
+        cv2.imshow('Original Image', img)
+        cv2.imshow('Deblurred Image', deblurred_image)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
 
     # cv2.imshow("source",img)
     # cv2.imshow("result", result)
-    
-    cv2.waitKey(0)       
 
+
+def deflur(image):
+    #来源https://blog.51cto.com/u_12204/8983821
+    en_img=image
+    return en_img
 
 
 if __name__ == '__main__':
-    dehaze_V2(r'./Attachment1','./output/enhancement')
+    dehaze(r'./Attachment2','./forty/enhancement')
+
+
 
