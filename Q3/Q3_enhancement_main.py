@@ -53,18 +53,18 @@ def guided_filter(p, i, r, e):
 
 
 
-def dehaze(im):
+# def dehaze(im):
 
-    img = im.astype('float64') / 255
-    img_gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY).astype('float64') / 255
-    atom = get_atmo(img)
-    trans = get_trans(img, atom)
-    trans_guided = guided_filter(trans, img_gray, 20, 0.0001)
-    trans_guided = cv2.max(trans_guided, 0.25)
-    result = np.empty_like(img)
-    for i in range(3):
-        result[:, :, i] = (img[:, :, i] - atom) / trans_guided + atom
-    return result*255
+#     img = im.astype('float64') / 255
+#     img_gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY).astype('float64') / 255
+#     atom = get_atmo(img)
+#     trans = get_trans(img, atom)
+#     trans_guided = guided_filter(trans, img_gray, 20, 0.0001)
+#     trans_guided = cv2.max(trans_guided, 0.25)
+#     result = np.empty_like(img)
+#     for i in range(3):
+#         result[:, :, i] = (img[:, :, i] - atom) / trans_guided + atom
+#     return result*255
 
 def dehaze_V2(originPath,savePath):
     '''originaPath:文件夹的路径，图片上一级
