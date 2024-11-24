@@ -3,8 +3,9 @@ import numpy as np
 def estimate_background_light_local(img, window_size=15): 
     #将img读取为numpy数组
     image = np.array(img)
+    gray=img
     # 转换为灰度图像 
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) 
+    # gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) 
     #展示这张gray图像
     # cv2.imshow('gray',gray)
     # #保存上一个窗口的图像
@@ -21,7 +22,7 @@ def estimate_background_light_local(img, window_size=15):
     # 
     # # 选择该区域的平均值作为背景光 
     background_light = np.mean(image[max_indices[0], max_indices[1]]) 
-    return 0 # 读取图像 
+    # return 0 # 读取图像 
 
     return background_light # 读取图像 
 
