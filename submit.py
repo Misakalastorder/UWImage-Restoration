@@ -20,8 +20,12 @@ os.system("git pull origin master --rebase")
 
 #添加提交代码的说明
 commit_message = input("Enter the commit message: ")
-os.system(f'git commit -m "{commit_message}"')
-os.system(f'"{commit_message}"')
+os.system(f'git commit -m')
+# Commit the changes
+if commit_message:
+    #等待一秒
+    os.system("sleep 1")
+    os.system(f'"{commit_message}"')
 
 
 # Push the changes to the remote repository
