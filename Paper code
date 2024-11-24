@@ -1,0 +1,1037 @@
+% !Mode:: "TeX:UTF-8"
+%%  本模板推荐以下方式编译:
+%%     1. PDFLaTeX[推荐]
+%%     2. xelatex [含中文推荐]
+%%  注意：
+%%　 1. 文件默认的编码为 UTF-8 对于windows，请选用支持UTF-8编码的编辑器。
+%%   2. 若是模板有什么问题，请及时与我们取得联系，Email：latexstudio@qq.com。
+%%   3. 可以到  https://ask.latexstudio.net 提问
+%%   4. 请安装 最新版本的 TeXLive 地址：
+%%   http://mirrors.ctan.org/systems/texlive/Images/texlive.iso
+
+\documentclass{apmcmthesis}
+
+\usepackage{url}
+\usepackage{subcaption}
+
+%%%%%%%%%%%%填写相关信息%%%%%%%%%%%%%%%%%%%%%%%%%%
+\tihao{A}                            %选题
+\baominghao{apmcm24211507}                 %参赛编号
+\begin{document}
+
+\pagestyle{frontmatterstyle}
+
+\begin{abstract}
+To address the issue of underwater image degradation, we calculate image feature values and use a decision tree model to train an image classification model. Based on the Jaffe-McGlamery underwater imaging model, we established three sub-models and computed the enhanced images using corresponding algorithms. Using GAN, we trained on both paired and unpaired datasets to obtain an image enhancement model for complex scenarios. Finally, we evaluated the image restoration performance of the models designed for single scenes and those for complex scenes in three specific single scenes, providing further feasibility recommendations.\\
+\textbf{Question 1} requires us to classify the given images into three categories: Color Cast, Low Light, and Blur. We calculated 12 feature values, including Laplacian variance, to characterize the type of information in the images. Using a decision tree model for supervised learning, we completed the training of the classification model, ultimately categorizing the given images into the three specified classes.\\
+\textbf{Question 2and 3} require us to establish degradation models based on three types of degradation and propose image enhancement models for these degradation types. Based on the Jaffe-McGlamery underwater imaging model, we derived three degradation models and evaluated their performance in simulating degradation phenomena. We then applied prior knowledge, an approximate atmospheric scattering model, and the Richardson-Lucy algorithm to develop corresponding underwater image enhancement models, and used these models to process the images to evaluate their image restoration performance.\\
+\textbf{Question 4} requires us to propose an underwater image enhancement model for complex scenes. We utilized Generative Adversarial Networks (GAN) and specific paired and unpaired datasets to train a restoration model for complex scenes.\\
+\textbf{Question 5} requires us to compare the enhancement models for single scenes with those for complex scenes and provide further feasibility recommendations. We evaluated the restoration performance of these models in single scenes, summarized their advantages and disadvantages, and provided recommendations for their optimal application scenarios and potential areas for improvement.
+
+\keywords{decision tree model\quad  GAN\quad   R-L algorithm\quad   prior knowledge}
+\end{abstract}
+
+
+
+\newpage
+%目录
+\tableofcontents
+
+
+\newpage
+\pagestyle{mainmatterstyle}
+\setcounter{page}{1}
+\section{Introduction}
+\subsection{Question Background}
+In deep-sea exploration and seabed resource surveys, high-quality underwater images are crucial. However, due to the complex underwater environment, image quality often significantly degrades because of the absorption and scattering effects of light in water, manifesting as blurriness, low contrast, and color distortion, a phenomenon collectively known as underwater image degradation. The main causes of underwater image degradation include the transmission loss of light in water, forward scattering and backscattering effects, as well as the scattering of light by suspended particles. These factors collectively lead to the loss of detail and clarity in images during transmission, thus affecting visual recognition and analysis. Although physical models (such as the Jaffe-McGlamery model) have been used to decompose and model the underwater imaging process, the diversity and uncertainty of complex underwater scenes make it difficult for existing enhancement methods to be fully adaptable. Therefore, research on underwater image enhancement techniques tailored for complex scenarios is of great significance for improving the effectiveness and robustness of underwater visual tasks.
+\subsection{Restatement of Problem}
+Considering the background information provided in the problem statement, the following issues need to be addressed:
+\subsubsection{Question 1}
+Utilize image statistical analysis techniques to process the provided underwater image (Attachment 1), analyze the impact of various feature parameters on image brightness, color, and clarity, establish an image classification model, classify the image in Attachment 1, and explain the reasons.
+\subsubsection{Question 2}
+We need to analyze the causes of underwater image degradation based on the degradation types mentioned in Question 1 and in combination with the given underwater imaging model. We will construct an image degradation model for different underwater scenes and summarize the similarities and differences of the degradation models from the perspectives of color, lighting, and clarity.
+\subsubsection{Question 3}
+Based on the degradation model constructed in Question 2, we need to propose corresponding underwater image enhancement methods for specific degradation types in a single scene (such as color bias, blur, or low lighting). On this basis, we will validate the proposed methods using the image data provided in Attachment 2, display enhanced test image results, and calculate evaluation metrics such as PSNR, UCIQE, and UIQM to assess the quality of our model.
+\subsubsection{Question 4}
+Combining the issues discussed earlier and the images provided in the attachment, for the problem of underwater image degradation in complex scenes, we need to design an image enhancement model that is applicable to a variety of complex scenarios. After implementing the model, we should be able to enhance the given images and display the results, while also calculating evaluation metrics such as PSNR, UCIQE, and UIQM for the enhanced images.
+\subsubsection{Question 5}
+We need to compare the enhancement models designed for single scenes with the comprehensive enhancement model suitable for complex scenes, analyze the advantages and disadvantages of both in practical applications, and further propose feasible suggestions for actual underwater visual enhancement.
+\section{Problem Analysis}
+\subsection{Analysis of Problem 1}
+In Problem 1, we need to utilize appropriate image statistical analysis techniques to conduct multi-angle analyses on the provided underwater images and categorize them into three classes. Based on image processing experience, features such as Color Bias, Color Balance, White Balance, Mean Brightness Normalized, Kurtosis Normalized, Dark Ratio Normalized, Laplacian Variance, Entropy Value, and Reblur Value can be used to characterize the brightness, color, and clarity of the images. Experimental validation has shown that using simple thresholding for classification yields very low accuracy; therefore, we adopt a supervised learning approach, using some of the images from Attachment 1 as the training set. By employing a decision tree model, we aim to classify the images from Attachment 1 into three categories: Low Light, Color Cast, and Blur.
+\subsection{Analysis of Problem 2}
+In Question 2, we need to use the given Jaffe-McGlamery model to construct an image degradation model for the provided image data and analyze the causes of degradation. Additionally, we need to summarize the similarities and differences of these degradation models from multiple perspectives, such as color, lighting, and clarity. Based on the three types of degradation, we design three models: a color degradation sub-model, a brightness degradation sub-model, and a clarity degradation sub-model. By formulating appropriate model assumptions and introducing necessary variables, we establish the mathematical equations for these three models. According to the physical basis of the three models, we summarize their similarities and differences.
+\subsection{Analysis of Problem 3}
+In Problem 3, we need to develop underwater image enhancement methods for each single type of degradation based on the degradation models discussed in the previous section, and calculate various evaluation metrics for the enhanced images. For the three types of degradation models, we propose the following methods respectively:\\
+\textbf{Color Cast:} Based on the Jaffe-McGlamery underwater imaging model and the provided formulas, we estimate the necessary parameters using prior knowledge, filter out noise, calculate depth of field and background brightness, thereby reversing the process to obtain the enhanced image.\\
+\textbf{Low light Restoration:} By neglecting the absorption of light at different wavelengths by water, we simplify this model to an atmospheric scattering model. We implement low-light restoration based on the dark channel prior theory.\\
+\textbf{Clarity Restoration:} We employ the Richardson-Lucy algorithm, which uses iterative computation to restore the clarity of the R, G, B channels of the image, and then combine them to form the final clarity-restored image.
+\subsection{Analysis of Problem 4}
+In Problem 4, we need to integrate the insights from the previous problems to construct an image enhancement model for complex scenes. We utilize Generative Adversarial Networks (GANs), combining paired and unpaired datasets to train the image enhancement model, and apply it to enhance and restore images in complex scenes.
+\subsection{Analysis of Problem 5}
+In Problem 5, we need to compare the image enhancement models designed for single scenes with the comprehensive image enhancement models designed for complex scenes, summarize their advantages and disadvantages, and provide further recommendations. Therefore, we separately evaluate the image enhancement effects of the two models under three specific single scenes, compare their image enhancement quality, and then summarize the strengths and weaknesses of the single scene image enhancement models and the complex scene image enhancement models. Based on the evaluation results, we provide further feasible recommendations.
+
+\section{Model Hypothesis}
+\subsection{Assumption 1}
+In the process of establishing the color degradation sub-model, we do not consider the effect of the backscattering component.\\
+\textbf{Explanation:}
+This assumption is reasonable and sufficient, as the backscattering component refers to the natural light entering the water being scattered by suspended particles and then entering the imaging system, which results in low image contrast. However, this component has almost no effect on the color of the image. Therefore, we ignore the influence of the backscattering component in the color degradation sub-model.
+
+
+
+\subsection{Assumption 2}
+We introduce Gaussian white noise n(x, y) to approximate the noise in the image.\\
+\textbf{Explanation:}
+In many physical processes in nature, noise often exhibits characteristics of a Gaussian distribution. This is because, according to the Central Limit Theorem, when a random variable is the sum of a large number of independent and identically distributed random variables, its distribution tends to be normal (i.e., Gaussian). Therefore, in many cases, assuming that the noise in an image is Gaussian noise is reasonable. Furthermore, approximating the noise in the image with Gaussian white noise significantly reduces the difficulty of denoising, making it simple and intuitive.
+
+
+\subsection{Assumption 3}
+In the process of establishing the brightness degradation sub-model, we assume that the absorption rate of water is the same for different wavelengths of light.\\
+\textbf{Explanation:}
+According to physical laws, the absorption rate of water for different wavelengths of light primarily affects the color of the image, and its impact on the brightness characteristics of the image can be negligible. This assumption greatly simplifies the design of the model, reduces the introduction of parameters, and improves the efficiency of model construction.
+
+\subsection{Assumption 4}
+In the process of establishing the clarity degradation sub-model, we assume that blurring is caused only by forward scattering, and we ignore the effects of backscattering and the absorption rate of water on light.\\
+\textbf{Explanation:}
+For the single scene of clarity degradation, the image does not have issues of color shift or low light, so the effects of water's absorption rate on different wavelengths of light and the backscattering component can be ignored.
+
+
+\subsection{Assumption 5}
+In the process of establishing the degradation sub-model, we assume that the image blur is Gaussian blur.\\
+\textbf{Explanation:}
+Due to the complexity of different underwater environments, the causes of underwater image degradation can primarily be divided into noise and blur. Among these, blur can be further categorized into motion blur caused by the movement of water or fish, defocus blur caused by the scattering of underwater light or the camera lens not achieving ideal focus, and Gaussian blur caused by underwater turbulence. Among these types of blur, the Gaussian blur function is the most common. For imaging systems and optical measurement systems, many factors collectively determine the system's degradation function, and the overall result is that the degradation function tends towards a Gaussian model. Therefore, we assume that Gaussian blur is the primary factor causing image blur.
+
+\newpage
+\section{Notations}
+\begin{table}[ht]
+\centering
+\begin{tabular}{cl} 
+\toprule
+Variable Name & Meanings  \\ 
+\midrule
+$\lambda$ & $\lambda\in\{R,G,B\}$\\
+$I(x,y)$ & The degraded underwater image\\
+$J(x,y)$ & The clear image\\
+$t(x,y)$ & The light transmission function of the underwater scene\\
+$B$ & The ambient light\\
+$c_\lambda$ & Light intensity attenuation coefficient\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\newpage
+\section{Model Establishment and Solution of Problem 1}
+\subsection{The Establishment of an Underwater Image Degradation Classification Model}
+\subsubsection{Image Data Preprocessing}
+First, we need to preprocess the image data in Attachment 1. After reviewing relevant literature, we found that the HSV value (brightness), HSV hue angle, and Laplacian variance can respectively quantify the brightness, color shift, and sharpness features of images, thereby assisting us in completing image classification. However, after testing, it was discovered that due to the small number of feature values, they could not adequately represent the three characteristics of the images. Therefore, we introduced more features:\\
+\textbf{(Feature 1)Color Bias}\\
+Definition: Color histogram offset is used to measure the peak differences of each color channel in an image. Specifically, we calculate the histogram peak for each color channel (red, green, blue) and then compute the ratio of these peaks to the average peak across all channels. The maximum ratio is defined as the color offset indicator.\\
+Normalization: Normalize the color offset indicator to the range [0, 1]. Assuming the minimum value of the offset indicator is 1 and the maximum value is 3.\\
+\textbf{(Feature 2)Color Balance}\\
+Definition: Color balance is used to measure the mean difference of each color channel in an image. Specifically, we calculate the mean of each color channel and then determine the maximum difference among these means.\\
+Normalization: Normalize the color balance indicator to the range [0, 1]. Assuming the minimum value of the difference is 0 and the maximum value is 255.\\
+\textbf{(Feature 3)White Balance}\\
+Definition: White balance is used to measure the RGB values of a region in the image that is assumed to be white. Specifically, we select a region in the image (for example, 100x100 pixels) and calculate the mean RGB values of that region.\\
+Normalization: Normalize the mean value of each color channel to the range [0, 1]. Assuming the minimum value of the RGB values is 0 and the maximum value is 255.\\
+\textbf{(Feature 4)Mean Brightness Normalized}\\
+Definition: Average brightness is used to measure the overall brightness of an image. Specifically, we convert the image to a grayscale image and then calculate the average brightness of the grayscale image.\\
+Normalization: Normalize the average brightness to the range [0, 1]. Assuming the minimum value of the grayscale is 0 and the maximum value is 255.\\
+\textbf{(Feature 5)Kurtosis Normalized}\\
+Definition: Histogram kurtosis is used to measure the kurtosis of the image's grayscale histogram. Specifically, we calculate the histogram of the grayscale image and use the `scipy.stats.kurtosis` function to compute the kurtosis.\\
+Normalization: Normalize the kurtosis to the range [0, 1]. Assuming the minimum value of the kurtosis is -3 and the maximum value is 3.\\
+\textbf{(Feature 6)Dark Ratio Normalized}\\
+Definition: Dark area ratio is used to measure the proportion of dark pixels in an image. Specifically, we calculate the number of pixels in the grayscale image that have a value below a certain threshold (for example, 60) and divide this number by the total number of pixels.\\
+Normalization: Normalize the dark area ratio to the range [0, 1]. Assuming the minimum value of the dark pixel ratio is 0 and the maximum value is 1.\\
+\textbf{(Feature 7)Laplacian Variance}\\
+Definition: Laplacian variance is used to measure the sharpness of an image. Specifically, we convert the image to a grayscale image and then calculate the variance of the Laplacian operator.\\
+Normalization: Normalize the Laplacian variance to the range [0, 1]. Assuming the minimum value of the Laplacian variance is 0 and the maximum value is 10000.\\
+\textbf{(Feature 8)Entropy Value}\\
+Definition: Entropy is used to measure the complexity of an image. Specifically, we calculate the histogram of the grayscale image and use the formula $-sum(p * log2(p))$ to compute the entropy, where $p$ is the probability of each gray level.\\
+Normalization: Normalize the entropy to the range [0, 1]. Assuming the minimum value of the entropy is 0 and the maximum value is 8 (the entropy of 256 gray levels).\\
+\textbf{(Feature 9)Reblur Value}\\
+Definition: Re-blur value is used to measure the degree of blurriness in an image. Specifically, we convert the image to a grayscale image, then apply Gaussian blur, and calculate the sum of the absolute differences between the original image and the blurred image.\\
+Normalization: Normalize the re-blur value to the range [0, 1]. Assuming the minimum value of the re-blur value is 0 and the maximum value is 255 * the total number of pixels in the image.
+\subsubsection{Methods for Image Classification}
+After calculating these three feature values, we attempted to directly set thresholds for the feature values to determine the image category. However, since the features are not entirely orthogonal and can influence each other, the results were not satisfactory(\textbf{Figure 1}).
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth]{figures/Q1/image_001.png}
+    \caption{A Color Cast image is classified as Low Light.}
+    \label{fig:image_001}
+\end{figure}
+
+Therefore, we tried a supervised learning approach, extracting some images from a new image set and manually labeling them. In these images, we performed decision tree classification on some of the samples(\textbf{Figure 2}):
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figures/Q1/decision_tree.eps}
+    \caption{The Decision Tree.}
+    \label{fig:decision_tree}
+\end{figure}
+
+Using cross-validation, obtain the Confusion Matrix(\textbf{Figure 3}) and metrics such as Accuracy, Precision, Recall, and F1 Score.For a three-class classification problem, assuming we have three classes A, B, and C, the structure of the confusion matrix can be represented as follows:
+
+$$
+\begin{bmatrix}
+TP_A & FP_{AB} & FP_{AC} \\
+FP_{BA} & TP_B & FP_{BC} \\
+FP_{CA} & FP_{CB} & TP_C
+\end{bmatrix}
+$$
+
+Specifically:
+\begin{itemize}
+    \item $TP_A$: The number of samples that are actually class A and are predicted to be class A.
+    \item $FP_{AB}$: The number of samples that are actually class A but are predicted to be class B.
+    \item $FP_{AC}$: The number of samples that are actually class A but are predicted to be class C.
+    \item $FP_{BA}$: The number of samples that are actually class B but are predicted to be class A.
+    \item $TP_B$: The number of samples that are actually class B and are predicted to be class B.
+    \item $FP_{BC}$: The number of samples that are actually class B but are predicted to be class C.
+    \item $FP_{CA}$: The number of samples that are actually class C but are predicted to be class A.
+    \item $FP_{CB}$: The number of samples that are actually class C but are predicted to be class B.
+    \item $TP_C$: The number of samples that are actually class C and are predicted to be class C.
+\end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figures/Q1/confusion_matrix.eps}
+    \caption{The Confusion Matrix.}
+    \label{fig:confusion_matrix}
+\end{figure}
+
+
+The formulas for calculating these metrics are as follows:\\
+$$
+\text{Accuracy} = \frac{TP_A + TP_B + TP_C}{TP_A + TP_B + TP_C + FP_{AB} + FP_{AC} + FP_{BA} + FP_{BC} + FP_{CA} + FP_{CB}}
+$$
+
+$$
+\text{Precision}_A = \frac{TP_A}{TP_A + FP_{BA} + FP_{CA}}
+$$
+$$
+\text{Precision}_B = \frac{TP_B}{TP_B + FP_{AB} + FP_{CB}}
+$$
+$$
+\text{Precision}_C = \frac{TP_C}{TP_C + FP_{AC} + FP_{BC}}
+$$
+
+$$
+\text{Recall}_A = \frac{TP_A}{TP_A + FP_{AB} + FP_{AC}}
+$$
+$$
+\text{Recall}_B = \frac{TP_B}{TP_B + FP_{BA} + FP_{BC}}
+$$
+$$
+\text{Recall}_C = \frac{TP_C}{TP_C + FP_{CA} + FP_{CB}}
+$$
+
+$$
+\text{F1 Score}_A = 2 \times \frac{\text{Precision}_A \times \text{Recall}_A}{\text{Precision}_A + \text{Recall}_A}
+$$
+$$
+\text{F1 Score}_B = 2 \times \frac{\text{Precision}_B \times \text{Recall}_B}{\text{Precision}_B + \text{Recall}_B}
+$$
+$$
+\text{F1 Score}_C = 2 \times \frac{\text{Precision}_C \times \text{Recall}_C}{\text{Precision}_C + \text{Recall}_C}
+$$
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth]{figures/Q1/scores.png}
+    \caption{The scores of the Model.}
+    \label{fig:scores}
+\end{figure}
+The results in \textbf{Figure 4} are the averages of the outcomes for each of the three types.
+
+\subsection{Classification results and distribution histogram}
+Using the trained model, the images from Attachment 1 were classified, and the distribution histogram of the classification results is shown in \textbf{Figure 5}:
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth]{figures/Q1/bar.eps}
+    \caption{The Distribution Histogram.}
+    \label{fig:distribution histogram}
+\end{figure}
+
+\section{Model Establishment and Solution of Problem 2}
+\subsection{Theoretical Analysis of Underwater Image Degradation Models}
+Underwater image degradation is caused by the combined effects of absorption, scattering, and optical propagation. The relevant models are as follows:
+\begin{equation*}
+I(x)=J(x)\cdot t(x)+B(1-t(x))
+\end{equation*}
+\begin{itemize}
+    \item $I(x)$: Degraded underwater image.
+    \item $J(x)$: Clear image (ideal case).
+    \item $t(x)$: Light transmittance, which describes the attenuation of light as it propagates through water. It depends on environmental parameters such as water depth and suspended particles.
+	\item $B$: Ambient light has a global impact on the image (usually causing color cast).
+\end{itemize}
+\textbf{Main Degradation Factors:}\\
+(Part 1)  Color Cast:\\
+Due to the different absorption rates of light at different wavelengths in water, shorter wavelength light (blue-green light) travels farther, causing the overall image to appear more blue or green.\\
+Mathematical Characteristics: Reduced intensity in the red channel, relative increase in the blue/green channel intensity.\\
+(Part 2)  Low Light:\\
+As depth increases, light intensity gradually diminishes, leading to dim and low-contrast images.\\
+Mathematical Characteristics: Low overall brightness distribution, compressed dynamic range.\\
+(Part 3)  Blur:\\
+Forward scattering of light causes edges to become blurred and details to be lost.\\
+Mathematical Characteristics: Attenuation of high-frequency information (gradients, edges).\\
+Based on the above degradation phenomena, we decompose the degradation model into three parts: the color degradation sub-model, the brightness degradation sub-model, and the clarity degradation sub-model. The following is the process of establishing these specific models.
+\subsection{Establishment of the Degradation Models}
+\subsubsection{Establishment of the Color Degradation Sub-Model}
+Color cast is caused by the different absorption rates of various spectral components in water, and can be modeled as:
+\begin{align*}
+I_\lambda(x,y) &= J_\lambda(x,y) + n_\lambda(x,y) \\
+t(x,y) &= e^{-c_\lambda\cdot d(x,y)}
+\end{align*}
+\begin{itemize}
+	\item $n_\lambda(x,y)$: Gaussian white noise.
+	\item $\lambda$: $\lambda$ belongs to the RGB channels.
+	\item $I_\lambda(x,y)$: The degradation value of a particular channel (red, green, blue).
+	\item $J_\lambda(x,y)$: The color value in the ideal case.
+	\item $c_\lambda$: The attenuation coefficient of the channel, where red light > green light > blue light.
+	\item $d(x,y)$: Depth of field.
+\end{itemize}
+\subsubsection{Establishment of the Brightness Degradation Sub-Model}
+Low light is primarily related to water depth, ambient light intensity, and the degree of water turbidity. Without considering the absorption of different wavelengths of light by water, only scattering is considered. This can be modeled as:
+\begin{align*}
+I_\lambda(x,y) &= J_\lambda(x,y)\cdot t_\lambda(x,y) + B_\lambda(1-t_\lambda(x,y)) \\
+t(x,y) &= e^{-c_\lambda\cdot d(x,y)}
+\end{align*}
+\begin{itemize}
+	\item $I(x,y)$: Pixel brightness value.
+	\item $c$: Light intensity attenuation coefficient, dependent on water quality (clear/turbid).
+\end{itemize}
+\subsubsection{Establishment of the Clarity Degradation Sub-Model}
+Blur is caused by forward scattering. In Assumption 5 of the model, we assume that the image blur is Gaussian blur. Therefore, we model the clarity degradation process as:
+\begin{equation*}
+I(x,y)=G(x,y)*J(x,y)
+\end{equation*}
+\begin{itemize}
+	\item $I(x)$: Blurred image.
+	\item $G(x)$: Scattering kernel (a variant of the Gaussian kernel, used to simulate scattering effects).
+	\item $*$: Convolution operation.
+\end{itemize}
+\subsection{Sub-model Effectiveness Evaluation}
+\subsubsection{Effectiveness of the Color Degradation Sub-model}
+The effect of applying color degradation to an untreated image is shown in the \textbf{Figure 6}, and the \textbf{Figure 7} are the histograms of the images.
+
+\begin{figure}[ht]
+    \centering
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q2_1/reference_image.png}
+        \caption{untreated image}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q2_1/image_blue.png}
+        \caption{The image after blue decay}
+    \end{subfigure}
+
+    \vskip\baselineskip
+
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q2_1/image_green.png}
+        \caption{The image after green decay}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q2_1/image_red.png}
+        \caption{The image after red decay}
+    \end{subfigure}
+    \caption{The images before and after processing}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q2_1/reference_image_histogram.png}
+        \caption{untreated image's histogram}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q2_1/blue.png}
+        \caption{The histogram of image after blue decay}
+    \end{subfigure}
+
+    \vskip\baselineskip
+
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q2_1/green.png}
+        \caption{The histogram of image after green decay}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q2_1/red.png}
+        \caption{The histogram of image after red decay}
+    \end{subfigure}
+    \caption{The histograms of images before and after processing}
+\end{figure}
+
+It can be seen that we have achieved the effect of color shift. In real underwater scenes, the attenuation coefficient of red light is much greater than that of green and blue light, so underwater images typically appear bluish-green rather than red.
+\subsubsection{Effectiveness of the Brightness Degradation Sub-model}
+The brightness degradation processing was applied to an unprocessed image, with the effect shown in the \textbf{Figure 8}. It can be observed that we have achieved a significant brightness degradation effect.\\
+
+\begin{figure}[ht]
+    \centering
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q2_2/image_1.png}
+        \caption{image before brightness decay}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q2_2/image_1_bshift.jpg}
+        \caption{image after brightness decay}
+    \end{subfigure}
+    \caption{image before and after brightness decay}
+\end{figure}
+
+The variation of PSNR with respect to the light intensity attenuation coefficient and ambient light is illustrated in the \textbf{Figure 9}. PSNR is an engineering term that represents the ratio of the maximum possible power of a signal to the power of destructive noise affecting its representation accuracy. We use PSNR to approximately indicate the effect of images during the process of degradation in low light conditions. Because when the degradation is minor, the PSNR value is too high, leading to unappealing image displays; therefore, only a portion of the image is presented. From the figure, it can be seen that as the light attenuation coefficient increases, the image quality progressively deteriorates, and the blurring effect caused by background light leads to fluctuations in the PSNR.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/Q2_2/main.eps}
+    \caption{PSNR vs the ambient light and light intensity attenuation coefficient.}
+\end{figure}
+
+\subsubsection{Effectiveness of the Clarity Degradation Sub-model}
+We apply clarity degradation processing to an unprocessed image, with the effect shown in the \textbf{Figure 10}. It can be seen that we have achieved a significant clarity degradation effect.
+
+\begin{figure}[ht]
+    \centering
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q2_3/image_1.png}
+        \caption{image before clarity decay}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q2_3/image_1_foggy.jpg}
+        \caption{image after clarity decay}
+    \end{subfigure}
+    \caption{image before and after clarity decay}
+\end{figure}
+
+We plot the surfaces showing the changes in Laplace Variance, Entropy Value, and Reblur Value with respect to sigma and kernel size(\textbf{Figure 11}). It can be observed that as sigma and kernel size increase, the image becomes more blurred.
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q2_3/Lap.eps}
+        \caption{Laplace Variance}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q2_3/Entropy.eps}
+        \caption{Entropy Value}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q2_3/Reblur.eps}
+        \caption{Reblur Value}
+    \end{subfigure}
+    \caption{The values change with respect to sigma and kernel size.}
+\end{figure}
+
+\subsection{Differences and Similarities Between Submodels}
+In clear shallow water, due to the minimal absorption and scattering of light by the water, the color shift, brightness degradation, and clarity degradation of the image are not significant. Therefore, in this environment, the results from the three degradation sub-models are quite similar.\\
+In turbid deep water, the absorption and scattering of light by the water are significantly increased due to the higher concentration of suspended particles. The probability of the image being underexposed increases substantially, and red light is almost completely absorbed, leading to noticeable color shifts in the image. Additionally, the increased number of suspended particles also causes a significant increase in image blurriness.\\
+In the presence of artificial light sources, the impact of natural physical conditions on the image is reduced, and the image quality is largely influenced by the parameters of the artificial light source. For example, when the coverage area of the artificial light source is large, the image will not be underexposed, but the color of the artificial light source will significantly affect the color shift characteristics of the image. If the artificial light source is focused on a specific area, the image may still appear underexposed outside that area, and the colors in the image will be less affected by the light source.
+
+\section{Model Establishment and Solution of Problem 3}
+\subsection{Based on the Color Degradation Sub-Model for Color Cast Image Restoration}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/Q3_1/fff.pdf}
+    \caption{Flowchart.}
+\end{figure}
+
+Based on the mathematical formula of the color degradation sub-model, we can derive the mathematical expression for $J (x,y)$:
+\begin{equation*}
+J_\lambda(x,y)=\frac{I_\lambda(x,y)-n_\lambda(x,y)}{e^{-c_\lambda\cdot d(x,y)}}
+\end{equation*}
+Since we only know $I(x, y)$ , we need to estimate the other parameters based on prior knowledge. The following are the steps for estimating the parameters and solving for $J(x, y)$:\\
+\textbf{Step 1: Noise Removal}\\
+A method based on the local statistical properties of homomorphic sub-blocks is used to estimate the variance of additive Gaussian white noise. Then, a least squares estimation-based image filtering method is derived to remove the noise.\\
+\textbf{Step 2: Estimate Depth}\\
+Due to the selective absorption of light by the water medium, the red channel, which has a longer wavelength, attenuates the fastest, while the blue and green channels attenuate more slowly. Therefore, as depth increases, the intensity difference between the blue and green channels and the red channel becomes greater. The scene depth can be estimated using the following equation:
+\begin{equation*}
+\tilde{I}(x) = \max\left(\tilde{I}_b(x), \tilde{I}_g(x)\right)
+\end{equation*}
+In the above equation, $\tilde{I}(x)$ represents the channel with the largest average intensity, where $\tilde{I}_b(x)$ and $\tilde{I}_g(x)$ represent the mean values of the B channel and G channel, respectively.\\
+Scene depth $d_D(x)$ can be expressed as:
+\begin{equation*}
+d_D(x) = \tilde{I}(x) - I_r(x)
+\end{equation*}
+To eliminate the potential impact of negative values in $d_D(x)$, it is normalized:
+\begin{equation*}
+\hat{d}_D(x) = \frac{d_D(x) - \min(d_D(x))}{\max(d_D(x)) - \min(d_D(x))}
+\end{equation*}
+\textbf{Step 3: Background Light Estimation Based on Scene Depth}\\
+To avoid the adverse effects of blue and green targets in the scene on the estimation results, the top 0.01\% of pixels with the highest intensity values in the estimated scene depth image are removed. Then, the top 1\% of the remaining pixels with the highest intensity values are selected, and the corresponding pixels in the original image are considered as candidate points for the background light. The superpixel segmentation blocks $F(x)$ in the original underwater image that contain these candidate points are identified, and the block with the smallest average gradient is chosen. The pixels in this block are selected as the basic pixel set $T$. Finally, the maximum pixel value in $T$ is chosen as the final estimated background light.
+\begin{equation*}
+B_\lambda = I^\lambda_{F'(x)}(max(T))
+\end{equation*}
+The superpixel segmentation of the image and the contour of the selected background light points are shown in the \textbf{Figure 13}.
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}[b]{0.23\textwidth}
+        \includegraphics[width=\textwidth]{figures/cxs/image_005_marked.png}
+        \caption{superpixel}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.23\textwidth}
+        \includegraphics[width=\textwidth]{figures/cxs/image_005_selected_img.png}
+        \caption{selected points}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.23\textwidth}
+        \includegraphics[width=\textwidth]{figures/cxs/image_061_marked.png}
+        \caption{superpixel}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.23\textwidth}
+        \includegraphics[width=\textwidth]{figures/cxs/image_061_selected_img.png}
+        \caption{selected points}
+    \end{subfigure}
+    \caption{superpixel segmentation and selected points.}
+\end{figure}
+
+\textbf{Step 4: Solving for the Compensated Image}\\
+According to the statistical analysis of underwater optical propagation characteristics by Gould et al., there is an approximate linear relationship between the scattering coefficient $b_\lambda$ and the wavelength of light:
+\begin{equation*}
+b_\lambda = (-0.00113\lambda + 1.62517)b(\lambda_c)
+\end{equation*}
+Among them, $\lambda$ is the wavelength of the color light, $b(\lambda_c)$ is the transmittance of the reference wavelength in different bands, which is a constant. The standard wavelengths for red, green, and blue light are $\lambda_r$ = 620nm, $\lambda_g$ = 540nm, and $\lambda_b$ = 450nm.\\
+The global background light $B_{\lambda,\infty}$ of underwater images is inversely proportional to the attenuation coefficient $c_\lambda$ of light beams with different wavelengths propagating in water, and directly proportional to the scattering coefficient $b_\lambda$, i.e.,
+\begin{equation*}
+B_{\lambda,\infty} \propto \frac{b_\lambda}{c_\lambda}
+\end{equation*}
+According to this, we can derive:
+\begin{align*}
+\frac{c_r}{c_b} &= \frac{b_r B_{b,\infty}}{b_b B_{r,\infty}} \\
+\frac{c_g}{c_b} &= \frac{b_g B_{b,\infty}}{b_b B_{g,\infty}}
+\end{align*}
+Use the attenuation correction factor to adjust the attenuation coefficient of blue light:
+\begin{equation*}
+\xi = 1 - \frac{\bar{I}_b(x)}{128}
+\end{equation*}
+Combining the color degradation sub-model from Question 2, we can derive the attenuation factors for the three channels:
+\begin{align*}
+\Gamma_b(x) &= \exp\left(-\xi \hat{d}_D(x)\right) = \exp\left(-\left(1-\frac{\bar{I}_b(x)}{128}\right)\hat{d}_D(x)\right)\\
+\Gamma_r(x) &= \exp\left(-\xi \hat{d}_D(x)\right)^{\frac{c_r}{c_b}} = \exp\left(-\left(1-\frac{\bar{I}_b(x)}{128}\right)\hat{d}_D(x)\right)^{\frac{c_r}{c_b}}\\
+\Gamma_g(x) &= \exp\left(-\xi \hat{d}_D(x)\right)^{\frac{c_g}{c_b}} = \exp\left(-\left(1-\frac{\bar{I}_b(x)}{128}\right)\hat{d}_D(x)\right)^{\frac{c_g}{c_b}}
+\end{align*}
+Using the scene depth information and the attenuation factors for each color channel, we can derive the compensated image:
+\begin{equation*}
+\tilde{I}_\lambda(x) = \frac{I_\lambda(x)}{\Gamma_\lambda}
+\end{equation*}
+Here, $\tilde{I}_\lambda(x)$ represents the image after color compensation, $I_\lambda(x)$ is the underwater image with color distortion, and $\lambda \in \{R, G, B\}$.\\
+According to the study by Wang et al., adaptive histogram equalization is applied to $I_\lambda(x)$ to obtain the final image.\\
+The comparison of the Color Cast image before and after restoration is shown in the \textbf{Figure 14}. It can be seen that for images with a noticeable green color cast, the restoration effect is significant.
+
+\begin{figure}[ht]
+    \centering
+    \begin{subfigure}[b]{0.35\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q3_1/image_1.png}
+        \caption{image before color restoration}
+    \end{subfigure}
+    \hspace{0.05\textwidth}
+    \begin{subfigure}[b]{0.35\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q3_1/image_1_img_cshift.png}
+        \caption{image after color restoration}
+    \end{subfigure}
+
+    \vskip\baselineskip
+
+    \begin{subfigure}[b]{0.35\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q3_1/image_2.png}
+        \caption{image before color restoration}
+    \end{subfigure}
+    \hspace{0.05\textwidth}
+    \begin{subfigure}[b]{0.35\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q3_1/image_2_img_cshift.png}
+        \caption{image after color restoration}
+    \end{subfigure}
+    \caption{The image before and after color restration}
+\end{figure}
+
+\newpage
+\subsection{Based on the Brightness Degradation Submodel for Low Light Image Restoration}
+According to the model assumptions, in the brightness degradation sub-model, we assume that the absorption rate of water for different wavelengths of light is the same, and the color shift is not significant. We find that this model is approximately similar to the atmospheric scattering model. Therefore, we implement low-light restoration based on the dark channel prior theory.\\
+The atmospheric scattering model is shown below:
+\begin{equation*}
+I_\lambda(x) = J_\lambda(x)t_\lambda(x) + B(1 - t_\lambda(x))
+\end{equation*}
+In the equation, $x$ represents a coordinate $(i,j)$ in the image, $I_\lambda(x)$ represents the degraded image, i.e., the hazy image; $J_\lambda(x)$ represents the scene radiance, i.e., the ideal clear image; $\lambda\in\{R,G,B\}$ represents the red, green, and blue channels; $t_\lambda(x)$ is the medium transmission rate, indicating that the scene radiance decreases exponentially with increasing scene depth.\\
+
+To simultaneously minimize both sides of the atmospheric scattering model.
+\begin{equation*}
+\min_{y \in \Omega(x)} \left( \min_{\lambda \in {R,G,B}} \frac{I_{\lambda}(y)}{B} \right) = t_{\lambda}(x) \min_{y \in \Omega(x)} \left( \min_{\lambda \in {R,G,B}} \frac{J_{\lambda}(y)}{B} \right) + 1 - t_{\lambda}(x)
+\end{equation*}
+Considering that the atmospheric background light $B$ is a positive number and $J_\lambda(y)$ represents the scene radiance, i.e., the clear, haze-free image, according to the dark channel prior principle, we can obtain:
+\begin{equation*}
+\min_{y \in \Omega(x)} \left( \min_{\lambda \in {R,G,B}} \frac{J_{\lambda}(y)}{B} \right) = 0
+\end{equation*}
+Therefore, the transmission rate $t_\lambda(x)$ can be expressed as:
+\begin{equation*}
+t_{\lambda}(x) = 1 - \min_{y \in \Omega(x)} \left( \min_{\lambda \in {R,G,B}} \frac{I_{\lambda}(y)}{B} \right)
+\end{equation*}
+After obtaining the refined transmission map $\tilde{t}_{\lambda}(x)$, the brightest pixel among the top $0.1\%$ of pixels with the highest values in the dark channel of the original image is defined as the atmospheric background light $A$. Then, the atmospheric scattering model equation is used for restoration, yielding:
+\begin{equation*}
+J(x) = \frac{I(x) - A}{\max\left(\tilde{t}_{\lambda}(x), t_0\right) + A} + A,
+\end{equation*}
+In the equation, $t_0$ is a lower bound protection parameter, preventing the estimated transmission rate from being too small, which could cause distortion in the output restored image. According to experimental analysis, $t_0$ is typically set to 0.1. Based on this, we obtain the image with restored brightness.\\
+The images before and after brightness restoration are shown in \textbf{Figure 15}. It can be seen that for weakly lit images with relatively uniform lighting conditions, the restoration effect is significant.
+
+\begin{figure}[ht]
+    \centering
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q3_2/image_1.png}
+        \caption{image before brightness restoration}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q3_2/image_1_lshift.png}
+        \caption{image after brightness restoration}
+    \end{subfigure}
+
+    \vskip\baselineskip
+
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q3_2/image_5.png}
+        \caption{image before brightness restoration}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q3_2/image_5_lshift.png}
+        \caption{image after brightness restoration}
+    \end{subfigure}
+    \caption{The image before and after brightness restration}
+\end{figure}
+
+\newpage
+\subsection{Based on the Clarity Degradation Sub-model for Blur Image Restoration}
+In Question 2, we constructed the model of clarity degradation:
+\begin{equation*}
+I(x,y)=G(x,y)*J(x,y)
+\end{equation*}
+To restore images degraded in clarity, we can use the Richardson-Lucy algorithm, which restores the clarity of the R, G, and B channels of an image through iterative processes, and finally combines them into the restored image. The mathematical foundation of the Richardson-Lucy algorithm is as follows:\\
+\textbf{Gaussian Convolution Kernel}\\
+The Gaussian convolution kernel $G(x,y)$ is defined as follows:
+\begin{equation*}
+G(x, y) = \frac{1}{2\pi\sigma^2} \exp\left(-\frac{x^2 + y^2}{2\sigma^2}\right)
+\end{equation*}
+where $\sigma$ is the standard deviation, which controls the width of the Gaussian distribution. In the code, we use a 5x5 convolution kernel with a standard deviation $\sigma$=1.0.\\
+\textbf{Richardson-Lucy Algorithm}\\
+The core idea of the Richardson-Lucy algorithm is to iteratively update the estimated image $f$ to gradually approach the original clear image $f_0$. Assume the blurred image $g$ is obtained by blurring the original image $f_0$ through the Point Spread Function (PSF) $h$:
+\begin{equation*}
+g = h * f_0 + n
+\end{equation*}
+where $*$ denotes the convolution operation, and $n$ represents noise.\\
+The iteration formula of the Richardson-Lucy algorithm is as follows:
+\begin{equation*}
+f^{(k+1)}(x, y) = f^{(k)}(x, y) \cdot \frac{g(x,y)}{(h*f^{(k)})(x,y)}*h^*(-x,-y)
+\end{equation*}
+Among them:
+\begin{itemize}
+    \item $f^{(k)}$ is the estimate image at the k-th iteration.
+    \item $h \ast f^{(k)}$ is the convolution of the estimate image with the PSF.
+    \item $h^\ast(-x,-y)$ is the mirror image of the PSF.
+    \item $\dfrac{g(x,y)}{(h \ast f^{(k)})(x,y)}$ is the relative blurriness.
+\end{itemize}
+Based on these mathematical foundations, we wrote the code to complete the image restoration.We divide the image into several pixel blocks for clarity restoration, and the pixel blocks of the image before and after clarity restoration are shown in \textbf{Figure 16 and Figure 17}. Due to the unknown PSF (Point Spread Function) information of the image, it is difficult to perform precise inverse Gaussian blur operations, so the effect of clarity restoration is generally acceptable.
+
+\begin{figure}[ht]
+    \centering
+    \begin{subfigure}[b]{0.25\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q3_3/image_1_original_image.jpg}
+        \caption{original image}
+    \end{subfigure}
+    \hspace{0.05\textwidth}
+    \begin{subfigure}[b]{0.25\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q3_3/image_1_Red_before.jpg}
+        \caption{red channel}
+    \end{subfigure}
+
+    \vskip\baselineskip
+
+    \begin{subfigure}[b]{0.25\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q3_3/image_1_Green_before.jpg}
+        \caption{green channel}
+    \end{subfigure}
+    \hspace{0.05\textwidth}
+    \begin{subfigure}[b]{0.25\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q3_3/image_1_Blue_before.jpg}
+        \caption{blue channel}
+    \end{subfigure}
+    \caption{The images before restoration}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \begin{subfigure}[b]{0.25\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q3_3/image_1_restored_image.jpg}
+        \caption{restored image}
+    \end{subfigure}
+    \hspace{0.05\textwidth}
+    \begin{subfigure}[b]{0.25\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q3_3/image_1_Red_after.jpg}
+        \caption{red channel}
+    \end{subfigure}
+
+    \vskip\baselineskip
+
+    \begin{subfigure}[b]{0.25\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q3_3/image_1_Green_after.jpg}
+        \caption{green channel}
+    \end{subfigure}
+    \hspace{0.05\textwidth}
+    \begin{subfigure}[b]{0.25\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q3_3/image_1_Blue_after.jpg}
+        \caption{blue channel}
+    \end{subfigure}
+    \caption{The images after restoration}
+\end{figure}
+
+Combining the definitions provided in the question and other resources, we can obtain the formulas for the following evaluation metrics:
+
+$$
+\text{PSNR} = 10 \log_{10}\left(\frac{\text{MAX}_I^2}{\text{MSE}}\right)
+$$
+where ${MAX}_I$ is the maximum pixel value of the image.
+$$
+\text{MSE} = \frac{1}{mn} \sum_{i=0}^{m-1} \sum_{j=0}^{n-1} (I(i,j) - K(i,j))^2
+$$
+where $ I(i,j) $ and $ K(i,j) $ are the pixel values of the original and restored images, respectively, and $ m $ and $ n $ are the dimensions of the image.
+
+$$
+\text{UCIQE} = c_1 \times \sigma_c + c_2 \times con_l + c_3 \times \mu_s
+$$
+where $c_1$, $c_2$, and $c_3$ are weight coefficients, $\sigma_c$ is the chroma standard deviation,$con_l$ is the luminance contrast, $\mu_s$ is the mean saturation.
+
+$$
+\text{UIQM} = c_1 \times UICM + c_2 \times UISM + c_3 \times UICoNM
+$$
+where $UICM$, $UISM$, and $UICoNM$ represent the underwater image colorfulness, sharpness, and contrast measures, respectively, $c_1$, $c_2$, and $c_3$ are weight coefficients.\\
+Calculate the corresponding metrics of the image using these formulas, and plot the distribution histogram.(\textbf{Figure 18, 19, 20})
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}[b]{0.22\textwidth}
+        \includegraphics[width=\textwidth]{figures/12/blur/inp_uqims.eps}
+        \caption{UQIMS}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.22\textwidth}
+        \includegraphics[width=\textwidth]{figures/12/blur/PSNR.eps}
+        \caption{PSNR}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.22\textwidth}
+        \includegraphics[width=\textwidth]{figures/12/blur/SSIM.eps}
+        \caption{SSIM}
+    \end{subfigure}
+	\hfill
+	\begin{subfigure}[b]{0.22\textwidth}
+        \includegraphics[width=\textwidth]{figures/12/blur/UCIQE.eps}
+        \caption{UCIQE}
+    \end{subfigure}
+    \caption{Evaluation Metrics of Clarity Restration Sub-Model.}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}[b]{0.22\textwidth}
+        \includegraphics[width=\textwidth]{figures/12/cshift/inp_uqims.eps}
+        \caption{UQIMS}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.22\textwidth}
+        \includegraphics[width=\textwidth]{figures/12/cshift/PSNR.eps}
+        \caption{PSNR}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.22\textwidth}
+        \includegraphics[width=\textwidth]{figures/12/cshift/SSIM.eps}
+        \caption{SSIM}
+    \end{subfigure}
+	\hfill
+	\begin{subfigure}[b]{0.22\textwidth}
+        \includegraphics[width=\textwidth]{figures/12/cshift/UCIQE.eps}
+        \caption{UCIQE}
+    \end{subfigure}
+    \caption{Evaluation Metrics of Color Restration Sub-Model.}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}[b]{0.22\textwidth}
+        \includegraphics[width=\textwidth]{figures/12/lowlight/inp_uqims.eps}
+        \caption{UQIMS}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.22\textwidth}
+        \includegraphics[width=\textwidth]{figures/12/lowlight/PSNR.eps}
+        \caption{PSNR}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.22\textwidth}
+        \includegraphics[width=\textwidth]{figures/12/lowlight/SSIM.eps}
+        \caption{SSIM}
+    \end{subfigure}
+	\hfill
+	\begin{subfigure}[b]{0.22\textwidth}
+        \includegraphics[width=\textwidth]{figures/12/lowlight/UCIQE.eps}
+        \caption{UCIQE}
+    \end{subfigure}
+    \caption{Evaluation Metrics of Brightness Restration Sub-Model.}
+\end{figure}
+
+\newpage
+\section{Model Establishment and Solution of Problem 4}
+Generative Adversarial Networks (GAN) aim to produce better outputs through the adversarial learning process between a generative model and a discriminative model. They are commonly used for tasks such as image generation and style transfer. For the purpose of image enhancement in complex scenes, we decided to adopt the GAN approach. Based on both paired and unpaired images from the EUVP dataset, we employed the FUnIE-GAN architecture, utilizing a five-layer U-Net structure as the generator. For the discriminator, we used PatchGAN to evaluate the quality of the generated images in patches.\\
+When training the network, we train separately according to the data types Pair and Unpair. For the \textbf{Pair Data}, we calculate the loss as follows:\\
+\textbf{Step 1: Global similarity}\\
+Calculate the local similarity between the generated image and the ground truth (GT).
+\begin{equation*}
+L_1(G) = \mathbb{E}_{X,Y,Z}[\|Y - G(X, Z)\|_1]
+\end{equation*}
+Here, this is similar to cGANs, where $Z$ denotes the noise.\\
+\textbf{Step 2: Image content}\\
+Image content loss:
+\begin{equation*}
+L_{con}(G) = \mathbb{E}_{X,Y,Z}[\|\Phi(Y) - \Phi(G(X, Z))\|_2]
+\end{equation*}
+The content loss here primarily involves using a pre-trained VGG19 network to extract image features for comparative computation.\\
+\textbf{Step 3: GAN loss}\\
+This section refers to the loss calculated by the PatchGAN discriminator.The overall loss is the weighted sum of the aforementioned three components:
+\begin{equation*}
+L_{total}(G) = \lambda_1 L_1(G) + \lambda_{con} L_{con}(G) + \lambda_{gan} L_{gan}(D, G)
+\end{equation*}
+Where $\lambda_1$, $\lambda_{con}$, and $\lambda_{gan}$ are the weights assigned to each loss term.\\
+For \textbf{Unpaired Data}, we adopt the cycle consistency loss:
+\begin{equation*}
+    \mathcal{L}_{cyc}(G_F, G_R) = \mathbb{E}_{X,Y,Z} \left[ \| X - G_R(G_F(X, Z)) \|_1 \right] + \mathbb{E}_{X,Y,Z} \left[ \| Y - G_F(G_R(Y, Z)) \|_1 \right]
+\end{equation*}
+The total loss is the weighted sum of the cycle consistency loss and the GAN loss:
+\begin{equation*}
+    G^*_F, G^*_R = \arg min_{G_F, G_R} \max_{D_Y, D_X} \mathcal{L}_{cGAN}(G_F, D_Y) + \mathcal{L}_{cGAN}(G_R, D_X) + \lambda_{cyc} \mathcal{L}_{cyc}(G_F, G_R)
+\end{equation*}
+Here, $D_Y$ ($D_X$) is the discriminator associated with the generator $G_F$ ($G_R$), and the scaling factor $\lambda_{cyc}=0.1$ is an empirically tuned hyper-parameter. We do not enforce additional global similarity loss-term because the $\mathcal{L}_{cyc}$ computes analogous reconstruction loss for each domain in $L_1$ space.\\
+Accordingly, we have trained an image enhancement model tailored for complex scenarios.For three different scenes, we used the model to restore the images, and the results are shown in the \textbf{Figure 21, 22 and 23}. It can be seen that the model can achieve basic image enhancement, but its performance is not as good as that of the models designed for single scenes.\\
+
+\begin{figure}[ht]
+    \centering
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q4/image_1.png}
+        \caption{image before restoration}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q4/image_1_p.png}
+        \caption{image after restoration}
+    \end{subfigure}
+    \caption{The Blur and Color Cast image before and after restoration}
+\end{figure}
+\begin{figure}[ht]
+    \centering
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q4/image_2.png}
+        \caption{image before restoration}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q4/image_2_p.png}
+        \caption{image after restoration}
+    \end{subfigure}
+	\caption{The Color Cast image before and after restoration}
+\end{figure}
+\begin{figure}[ht]
+    \centering
+	\begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q4/image_3.png}
+        \caption{image before restoration}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q4/image_3_p.png}
+        \caption{image after restoration}
+    \end{subfigure}
+    \caption{The Low Light image before and after restoration}
+\end{figure}
+
+\newpage
+Calculate the evaluation metrics of the model and plot the histogram(\textbf{Figure 24}).
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}[b]{0.22\textwidth}
+        \includegraphics[width=\textwidth]{figures/12/Q4/inp_uqims.eps}
+        \caption{UQIMS}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.22\textwidth}
+        \includegraphics[width=\textwidth]{figures/12/Q4/PSNR.eps}
+        \caption{PSNR}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.22\textwidth}
+        \includegraphics[width=\textwidth]{figures/12/Q4/SSIM.eps}
+        \caption{SSIM}
+    \end{subfigure}
+	\hfill
+	\begin{subfigure}[b]{0.22\textwidth}
+        \includegraphics[width=\textwidth]{figures/12/Q4/UCIQE.eps}
+        \caption{UCIQE}
+    \end{subfigure}
+    \caption{Evaluation Metrics of the model in Question 4.}
+\end{figure}
+
+\newpage
+\section{Model Establishment and Solution of Problem 5}
+We will compare the restoration performance of models designed for single scenes and those designed for complex scenes on images with corresponding degradation types, and summarize their advantages and disadvantages.
+\subsection{The restoration performance for Color Cast images}
+We processed the Color Cast images using both the color restoration model and the restoration model designed for complex scenes, with the results shown in the \textbf{Figure 25}. It can be observed that the color restoration model handles the colors appropriately but reduces the brightness. In contrast, the comprehensive model, while causing the image to have a reddish tint, preserves the brightness and details.
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q5/image_1.png}
+        \caption{original image}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q5/image_1_3.png}
+        \caption{processed by model in Q3}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q5/image_1_4.png}
+        \caption{processed by model in Q4}
+    \end{subfigure}
+    \caption{Color Cast images before and after restoration.}
+\end{figure}
+
+\subsection{The restoration performance for Low Light images}
+We processed the Low Light images using both the brightness restoration model and the restoration model designed for complex scenes, with the results shown in the \textbf{Figure 26}. It can be observed that the brightness restoration model performs significantly better in terms of restoring brightness, but it does not address the color shift issue. In contrast, the restoration model designed for complex scenes provides less brightness gain but performs color correction on the image.
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q5/image_3.png}
+        \caption{original image}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q5/image_3_3.png}
+        \caption{processed by model in Q3}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q5/image_3_4.png}
+        \caption{processed by model in Q4}
+    \end{subfigure}
+    \caption{Low Light images before and after restoration.}
+\end{figure}
+
+\newpage
+\subsection{The restoration performance for Blur images}
+We processed the Blur images using both the clarity restoration model and the restoration model designed for complex scenes, with the results shown in the \textbf{Figure 27}. It can be observed that both models perform well in restoring clarity. However, the restoration model designed for complex scenes also addresses the color shift and low light issues, demonstrating a more comprehensive performance.
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q5/image_2.png}
+        \caption{original image}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q5/image_2_3.png}
+        \caption{processed by model in Q3}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{figures/Q5/image_2_4.png}
+        \caption{processed by model in Q4}
+    \end{subfigure}
+    \caption{Blur images before and after restoration.}
+\end{figure}
+\subsection{Summary and Feasibility Suggestions}
+Based on the evaluation of restoration performance, we found that single restoration models perform better than complex scene models when dealing with specific types of image degradation. However, complex scene models can more comprehensively restore images in terms of color shift, low light, and clarity.\\
+During the solution process for Problem 3, we observed that when restoring color cast in images, the processing of green images was satisfactory, but blue images were over-processed to appear red. When restoring low-light images, over-exposure often occurred in the presence of artificial light sources, leading to a loss of image details. When restoring clarity, the difficulty was significant due to the unknown convolution kernel, making it challenging to restore clear images.\\
+In solving Problem 4, the images restored by neural networks often had average results and could exhibit artifacts. The reasons might include the fixed input size of 256 × 256 for the neural network, which requires scaling the input images, leading to a loss of pixel information and resolution. Additionally, during training, the training time might not have been long enough or the model's precision might not have been high enough, resulting in poor training outcomes. Finally, during prediction, the output images are 256 × 256, requiring interpolation to resize them to the original image dimensions. This interpolation can introduce errors and cause artifacts.\\
+\subsubsection{Improvements to the Model in Question 3}
+To reduce the impact of depth-of-field changes on the acquisition of transmittance, the SLIC (Simple Linear Iterative Clustering) superpixel segmentation algorithm can be adopted to improve the transmittance estimation and restoration quality of underwater images. The SLIC algorithm segments pixels with similar luminance, hue, and saturation together, which helps better distinguish regions with sudden depth changes, thereby avoiding incorrect estimation of the transmittance map.\\
+The main steps of the SLIC superpixel segmentation algorithm:\\
+\textbf{Initialization of Image Patches:}\\
+Adaptively set the number of superpixels based on the image size.\\
+Uniformly distribute the cluster centers for each patch.\\
+\textbf{Optimization of Cluster Center Positions:}\\
+Re-select the position with the minimum gradient within the neighborhood of each cluster center based on gradient values as the new cluster center.\\
+\textbf{Assignment of Cluster Labels:}\\
+For each pixel in the neighborhood around the adjusted cluster centers, calculate the distance between the pixel and the cluster center.\\
+Assign the pixel to the nearest cluster center.\\
+\textbf{Calculation of Distance for Judgement:}\\
+Compute the color component distance and spatial component distance.\\
+Take into account both color and spatial information to determine the final cluster centers.\\
+\textbf{Iterative Optimization:}\\
+Repeat the above steps until convergence criteria are met.\\
+\textbf{Advantages of the Improved Method:}\\
+By segmenting pixels with similar luminance, hue, and saturation together, the SLIC algorithm reduces the impact of depth-of-field changes on the acquisition of transmittance. Compared to traditional fixed square region divisions, superpixel segmentation can better distinguish areas with abrupt depth changes, enhancing the accuracy of transmittance estimation. More precise transmittance estimation also significantly improves the restoration effects of underwater images.\\
+\textbf{Summary:}\\
+The SLIC superpixel segmentation algorithm effectively improves the transmittance estimation and restoration process of underwater images by considering both color and spatial information, especially excelling in scenes with significant depth-of-field variations. This method not only increases the accuracy of transmittance but also enhances the overall visual quality of underwater images.
+\subsubsection{Improvements to the Model in Question 4}
+To address these issues, we can consider the following possible solutions to improve the effectiveness of image restoration:\\
+\textbf{Multi-Model Fusion:}\\
+Train multiple specialized models for different types of image degradation (such as color shift, low light, and clarity). Each model focuses on addressing a specific type of degradation. In practical applications, select the appropriate model based on the specific degradation of the image, or use model fusion to combine the outputs of multiple models to achieve better restoration results.\\
+\textbf{Enhancing Dataset Diversity:}\\
+Expand the dataset, particularly by including more images that are underrepresented in the training set (such as blue images). Use data augmentation techniques (such as rotation, flipping, and brightness adjustment) to increase the diversity and size of the dataset, thereby improving the model's generalization ability.\\
+\textbf{Improving Network Architecture:}\\
+Consider using more complex network architectures, such as UNet, ResNet, etc., which can better capture detailed information in images. Introduce attention mechanisms to focus the model on key areas of the image, which helps reduce the occurrence of artifacts.\\
+\textbf{Optimizing Training Strategies:}\\
+Increase the number of training epochs to ensure the model has sufficient time to learn effective features for image restoration. Use dynamic learning rate adjustment strategies, such as learning rate decay, to help the model converge effectively in later stages of training. Employ advanced techniques like mixed precision training to improve training efficiency while maintaining model accuracy.\\
+\textbf{Post-Processing Techniques:}\\
+Apply post-processing techniques to further enhance the quality of restored images, such as using bilateral filters to remove artifacts or leveraging super-resolution techniques to recover image details.\\
+\textbf{Adaptive Image Preprocessing:}\\
+Before inputting images into the neural network, preprocess the images adaptively based on their characteristics (such as color distribution and lighting conditions). For example, dynamically adjust the image size rather than fixing it to 256 × 256 to reduce information loss caused by stretching or compressing the image.\\
+\textbf{Improving Loss Functions:}\\
+Design or select loss functions that are more suitable for the current task, such as combining perceptual loss and style loss. This ensures that the model not only focuses on pixel-level similarity but also considers higher-level feature matching during training.\\
+
+By comprehensively applying these strategies, we can effectively improve the quality of image restoration, reduce the occurrence of artifacts, and better adapt to various types of image degradation.
+\newpage
+%参考文献
+\begin{thebibliography}{9}%宽度9
+\bibitem{1} Cong, R., Zhang, Y., Zhang, C., Li, Z., Zhao, Y., \textit{Research Progress on Underwater Image Enhancement and Restoration Driven by Deep Learning}, \textit{Journal of Signal Processing}, vol. 36, no. 9, 2020.
+\bibitem{2} Ding, Z., Guo, H., Gao, X., Lan, J., Weng, X., Man, Z., Zhuang, S., \textit{Blind Restoration of Gaussian Blurred Images}, PhD thesis, 2011.
+\bibitem{3} Xie, H., Peng, G., Wang, F., Yang, C., \textit{Underwater Image Restoration Based on Background Light Estimation and Dark Channel Prior}, \textit{Acta Optica Sinica}, vol. 38, no. 1, pp. 101002--1, 2018, Publisher: Chinese Laser Press.
+\bibitem{4} Gould, R. W., Arnone, R. A., Martinolich, P. M., \textit{Spectral Dependence of the Scattering Coefficient in Case 1 and Case 2 Waters}, \textit{Applied Optics}, vol. 38, no. 12, pp. 2377-2383, 1999.
+\bibitem{5} Wang, C., Sun, Y., Xu, S., Yu, M., Li, Z., \textit{Research on Adaptive Histogram Equalization Image Enhancement Algorithm}, \textit{Journal of Yangtze University (Natural Science Edition)}, vol. 15, no. 1, pp. 55-59, 2018.
+\bibitem{6} Chen, T. \textit{Research on Image Restoration Methods in Non-uniform Medium Propagation} [D]. Harbin: Harbin University of Science and Technology, 2017.
+\bibitem{7} Lei, X., Zhou, X., Li, Q., et al. \textit{Point Spread Function Estimation Based on Photon Map for Ocean Water} [J]. \textit{Optics and Photoelectric Technology}, vol. 08, no. 5, pp. 49-52, 2010.
+\bibitem{8} Panetta, K., Gao, C., Agaian, S. \textit{Human-Visual-System-Inspired Underwater Image Quality Measures} [J]. \textit{IEEE Journal of Oceanic Engineering}, vol. 41, no. 3, pp. 541-551, 2016.
+\bibitem{9} Yang, M., Sowmya, A. \textit{An Underwater Color Image Quality Evaluation Metric} [J]. \textit{IEEE Transactions on Image Processing}, vol. 24, no. 12, pp. 6062-6071, 2015.
+\bibitem{10} He, K., Jian, S., Fellow, et al. \textit{Single Image Haze Removal Using Dark Channel Prior} [J]. \textit{IEEE Transactions on Pattern Analysis \& Machine Intelligence}, vol. 33, no. 12, pp. 2341-2353, 2011.
+\bibitem{11} Ru, L. \textit{Research on Underwater Image Restoration Algorithm Based on Imaging Model} [D]. Tianjin: Tianjin University, 2019.
+\bibitem{12} Zhao, X., Jin, T., Qu, S. \textit{Deriving Inherent Optical Properties from Background Color and Underwater Image Enhancement} [J]. \textit{Ocean Engineering}, vol. 94, pp. 163-172, 2015.
+\bibitem{13} Galdran, A., Pardo, D., Picon, A., et al. \textit{Automatic Red-Channel Underwater Image Restoration} [J]. \textit{Journal of Visual Communication and Image Representation}, vol. 26, pp. 132-145, 2015.
+\bibitem{14} Liu, G., Lyu, Q., Liu, Y. \textit{Single Image Dehazing Algorithm Based on Adaptive Dark Channel} [J]. \textit{Acta Photonica Sinica}, vol. 47, no. 2, pp. 8, 2018.
+\bibitem{15} Achanta, R., Shaji, A., Smith, K., et al. \textit{SLIC Superpixels Compared to State-of-the-Art Superpixel Methods} [J]. \textit{IEEE Transactions on Pattern Analysis \& Machine Intelligence}, vol. 34, no. 11, pp. 2274-2282, 2012.
+\bibitem{16} Yang, M. \textit{Research on Underwater Image Restoration Algorithm Based on Dark Channel Prior} [D]. Dalian Maritime University, 2023. DOI: 10.26989/d.cnki.gdlhu.2023.000001.
+\bibitem{17} Hu, X., Zhang, W., Hu, Z., et al. \textit{An Improved Dark Channel Prior Underwater Color Image Restoration Algorithm} [J]. \textit{Journal of Yangzhou University (Natural Science Edition)}, vol. 21, no. 04, pp. 37-41, 2018. DOI: 10.19411/j.1007-824x.2018.04.009.
+\bibitem{18} Yin, F., Chen, T., Wu, R., et al. \textit{An Underwater Image Restoration Algorithm Combining Dark Channel Prior and Image Fusion} [J]. \textit{Journal of Small and Microcomputer Systems}, vol. 38, no. 11, pp. 2591-2596, 2017.
+\bibitem{19} Xie, K. \textit{Underwater Image Enhancement Algorithm Based on Dark Channel Prior and Water Turbidity Recognition} [D]. Xiamen University, 2018.
+\bibitem{20} Gong, L. \textit{Research on Underwater Image Fusion Algorithm Based on Color Compensation and Brightness Balance} [D]. Qilu University of Technology, 2022. DOI: 10.27278/d.cnki.gsdqc.2022.000144.
+\bibitem{21} Ding, X. \textit{Research on Underwater Optical Image Enhancement Methods Based on Physical Models and Deep Learning} [D]. Dalian Maritime University, 2022. DOI: 10.26989/d.cnki.gdlhu.2022.000051.
+\end{thebibliography}
+
+\newpage
+%附录
+
+\section{Appendix}
+\textbf{Due to the large scale of the project and the numerous source code files, we have included the source code in the attachment.}
+
+
+\end{document} 
